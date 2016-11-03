@@ -4,6 +4,9 @@ var express = require('express'),
     bodyParser = require('body-parser'), //parses information from POST
     methodOverride = require('method-override'); //used to manipulate POST
 
+//create Blob object
+var Blob = mongoose.model('Blob');
+
 //Any requests to this controller must pass through this 'use' function
 //Copy and pasted from method-override
 router.use(bodyParser.urlencoded({ extended: true }))
@@ -55,7 +58,7 @@ router.route('/')
         var company = req.body.company;
         var isloved = req.body.isloved;
         //call the create function for our database
-        mongoose.model('Blob').create({
+        Blob.create({
             name : name,
             badge : badge,
             dob : dob,
@@ -103,6 +106,21 @@ router.route('/json')
         });
     });
 
+router.route('/json/:name')
+    //GET all blobs
+    .get(function(req, res, next) {
+        //retrieve all blobs from Monogo
+        console.log(req.params.name);
+        var blob = new Blob({name: req.params.name});
+        blob.findByName(function (err, blobs) {
+              if (err) {
+                  return console.error(err);
+              } else {
+                  res.json(blobs);
+              }     
+        });
+    });
+
 /* GET New Blob page. */
 router.get('/new', function(req, res) {
     res.render('blobs/new', { title: 'Add New Blob' });
@@ -141,7 +159,7 @@ router.param('id', function(req, res, next, id) {
 
 router.route('/:id')
   .get(function(req, res) {
-    mongoose.model('Blob').findById(req.id, function (err, blob) {
+    Blob.findById(req.id, function (err, blob) {
       if (err) {
         console.log('GET Error: There was a problem retrieving: ' + err);
       } else {
@@ -167,7 +185,7 @@ router.route('/:id/edit')
 	//GET the individual blob by Mongo ID
 	.get(function(req, res) {
 	    //search for the blob within Mongo
-	    mongoose.model('Blob').findById(req.id, function (err, blob) {
+	    Blob.findById(req.id, function (err, blob) {
 	        if (err) {
 	            console.log('GET Error: There was a problem retrieving: ' + err);
 	        } else {
@@ -202,7 +220,7 @@ router.route('/:id/edit')
 	    var isloved = req.body.isloved;
 
 	    //find the document by ID
-	    mongoose.model('Blob').findById(req.id, function (err, blob) {
+	    Blob.findById(req.id, function (err, blob) {
 	        //update it
 	        blob.update({
 	            name : name,
@@ -231,7 +249,7 @@ router.route('/:id/edit')
 	//DELETE a Blob by ID
 	.delete(function (req, res){
 	    //find blob by ID
-	    mongoose.model('Blob').findById(req.id, function (err, blob) {
+	    Blob.findById(req.id, function (err, blob) {
 	        if (err) {
 	            return console.error(err);
 	        } else {
